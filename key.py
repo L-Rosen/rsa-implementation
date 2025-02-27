@@ -82,6 +82,16 @@ def keygen(lenght):
 def encrypt(m,e,n): return pow(m,e,n)
 def decrypt(c,d,n): return pow(c,d,n)
 
+
+def factorize(n):
+      for p in range(1,n):
+            q = n//p
+            if isPrime(p) and isPrime(q) and n%p == 0:
+                  return p,q
+
+"""
+Implémentation
+
 e,d,n,phi = keygen(110)
 m = random.randint(2,phi-1)
 c = encrypt(m,e,n)
@@ -89,3 +99,55 @@ m1 = decrypt(c,d,n)
 colorPrint(GREEN,f"Message : {m}")
 colorPrint(YELLOW,f"Message chiffré : {c}")
 colorPrint(GREEN, f"Message déchiffré : {m1}")
+"""
+
+"""
+Test avec une clé de taille petite
+
+e = 12413
+p,q = factorize(13289)
+n = p*q
+phi = phiCalc(p,q)
+r, d = extendedEuclid(e, phi)
+m = [9197, 6284, 12836, 8709, 4584, 10239, 11553, 4584, 7008, 12523,
+     9862, 356, 5356, 1159, 10280, 12523, 7506, 6311]
+
+colorPrint(GREEN,f"Message non chiffré :\n")
+for message in m:
+      print(message,end=" ; ")
+
+print()
+colorPrint(YELLOW,f"Message déchiffré :\n")
+for message in m:
+      print(decrypt(message,d,n),end=" ; ")
+
+print()
+colorPrint(GREEN,f"Message re-chiffré :\n")
+for message in m:
+      print(encrypt(decrypt(message,d,n),e,n),end=" ; ")
+
+La complexité est de n*sqrt(n)
+"""
+
+"""
+e = 163119273
+p,q = factorize(755918011)
+n = p*q
+phi = phiCalc(p,q)
+r, d = extendedEuclid(e, phi)
+m = [671828605, 407505023, 288441355, 679172842, 180261802]
+
+colorPrint(GREEN,f"Message non chiffré :\n")
+for message in m:
+      print(message,end=" ; ")
+
+print()
+colorPrint(YELLOW,f"Message déchiffré :\n")
+for message in m:
+      print(decrypt(message,d,n),end=" ; ")
+
+print()
+colorPrint(GREEN,f"Message re-chiffré :\n")
+for message in m:
+      print(encrypt(decrypt(message,d,n),e,n),end=" ; ")
+"""
