@@ -2,7 +2,7 @@
 # n = pq ; phi(n) = (p-1) * (q-1)
 # generation de e premier avec phi(n) e < phi(n)
 # trouve d avec euclide étendu
-from math import sqrt
+from math import sqrt,log
 import random
 
 # Définition des couleurs ANSI
@@ -69,14 +69,6 @@ def keygen(lenght):
       n = p*q
       phi = phiCalc(p,q)
       e,d = edGen(phi)
-
-      print("p :",p)
-      print("q :",q)
-      print("n :",n)
-      print("phi :",phi)
-      print("e :",e)
-      print("d :",d)
-
       return e,d,n,phi
 
 def encrypt(m,e,n): return pow(m,e,n)
@@ -151,3 +143,79 @@ colorPrint(GREEN,f"Message re-chiffré :\n")
 for message in m:
       print(encrypt(decrypt(message,d,n),e,n),end=" ; ")
 """
+
+def replaceAlphabet(alphabet,letter): return alphabet[letter]
+
+def blockSizeCalc(n,alphabet):
+      i = 1
+      while len(alphabet)**i < n:
+            i = i+1
+      return i-1
+
+def letterToNumber(alphabet, i, letter): 
+      return replaceAlphabet(alphabet,letter)*(len(alphabet)**i)
+
+def messageToBlocks(message,alphabet,block_size):
+
+      blocks = []
+      somme = 0
+      i = block_size
+      for letter in message:
+            i = i-1
+            somme += letterToNumber(alphabet, i, letter)
+            if i == 0:
+                  blocks.append(somme)
+                  i = block_size
+                  somme = 0
+
+      if i > 0:
+            for j in range(i):
+                  i -= 1
+                  somme+= 26*(block_size**i)
+            blocks.append(somme)
+      return blocks
+
+def blocksToMessage(blocks, alphabet, block_size):
+    return "A implémenter"
+
+
+def encryptBlocks(blocks,e,n):
+      blocksBis = []
+      for m in blocks:
+            blocksBis.append(encrypt(m,e,n))
+      return blocksBis
+
+def decryptBlocks(blocks,d,n):
+      blocksBis = []
+      for c in blocks:
+            blocksBis.append(decrypt(c,d,n))
+      return blocksBis
+
+alphabet = {
+    'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 
+    'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 
+    'U': 20, 'V': 21, 'W': 22, 'X': 23, 'Y': 24, 'Z': 25, '_': 26, '.': 27, '?': 28, '€': 29, 
+    '0': 30, '1': 31, '2': 32, '3': 33, '4': 34, '5': 35, '6': 36, '7': 37, '8': 38, '9': 39
+}
+
+print(YELLOW,end="")
+e,d,n,phi = keygen(int(input("Taille de la clé : ")))
+
+print(RESET,end="")
+colorPrint(CYAN,f"Clé publique : {e,n}")
+colorPrint(CYAN,f"Clé privée : {d,n}")
+colorPrint(CYAN,f"Phi : {phi}")
+print(YELLOW,end="")
+
+message = input("Message a chiffrer: ")
+print(RESET,end="")
+
+blockSize = blockSizeCalc(n,alphabet)
+blocks = messageToBlocks(message,alphabet,blockSize)
+colorPrint(GREEN,f"Message : {message}")
+colorPrint(YELLOW,f"Message en blocs : {blocks}")
+blocks = encryptBlocks(blocks,e,n)
+colorPrint(GREEN,f"Message chiffré : {blocks}")
+blocks = decryptBlocks(blocks,d,n)
+colorPrint(YELLOW,f"Message déchiffré en blocs: {blocks}")
+colorPrint(GREEN,f"Message déchiffré : {blocksToMessage(blocks,alphabet,blockSize)}")
