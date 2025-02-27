@@ -4,7 +4,6 @@
 # trouve d avec euclide étendu
 from math import sqrt
 import random
-from tqdm import tqdm
 
 # Définition des couleurs ANSI
 RED = "\033[31m"
@@ -20,63 +19,43 @@ def colorPrint(color,text):
       print(color+text+RESET)
 
 def isPrime(n):
-        if n <= 1: 
-              return False
+        if n <= 1:return False
 
-        if n == 2 : 
-              colorPrint(GREEN,f"{n} est premier.\n")
-              return True
+        if n == 2:return True
 
-        if n%2 == 0: 
-              return False #On élimine les nombres pairs sauf 2 avant d'itérer
+        if n%2 == 0:return False
 
-        for x in tqdm(range(3,int(sqrt(n))+1,2),f"Verification de {n}",unit="test"):
-               if n%x == 0: 
+        limit = int(sqrt(n)+1)
+        for x in range(3,limit,2):
+               if n%x == 0:
                      return False
 
-        colorPrint(GREEN,f"{n} est premier.\n")
         return True
 
 def pqGen(lenght):
         p, q = 0, 0
-
-        colorPrint(CYAN,"Génération de p ...")
+        limit = 2**(lenght//2)
         while not isPrime(p):
-            p = random.randint(2,2**(lenght//2))
-
-        colorPrint(CYAN,"Génération de q ...")
+              p = random.randint(2,limit)
         while not isPrime(q) or p == q:
-            q = random.randint(2,2**(lenght//2))
-        
+              q = random.choice(list(range(2, int(p-0.1*limit))) + list(range(int(p+0.1*limit), limit)))
         return p,q 
 
-def phiCalc(p,q):
-       return(p-1)*(q-1)            
-
+def phiCalc(p,q): 
+      return(p-1)*(q-1)            
             
-def extendedEuclid(e, phi):
-    a, b = e, phi
-    u0, u1 = 1, 0
-    while b != 0:
-        q, a, b = a // b, b, a % b
-        u0, u1 = u1, u0 - q * u1
-    if a != 1:
-        return False, None
-    
-    d = u0 % phi
-    return True, d
-    
+def extendedEuclid(a, b):
+      r,r1,u,u1,v,v1 = a,b,1,0,0,1
+      while r1 != 0: 
+            q = (r // r1)
+            r,u,v,r1,u1,v1 = r1,u1,v1,(r-q*r1),(u-q*u1),(v-q*v1)
+      return r, u % b
 
 def edGen(phi):
-    e = 0
-    colorPrint(CYAN, "Génération de e , d...")
-    isPrimeTogether = False
-    while not isPrimeTogether:
-        e = random.randint(2, phi)
-        isPrimeTogether, d = extendedEuclid(e, phi)
-    
-    colorPrint(GREEN, f"e = {e} est premier avec phi(n) = {phi}.")
-    colorPrint(GREEN, f"d = {d} est l'inverse modulaire de {e}.\n")
+    e,d,r = 0,0,0
+    while r != 1 or e == d:
+        e = random.randint(2, phi-1)
+        r, d = extendedEuclid(e, phi)
     return e, d
 
 def encrypt(m, e, n): #C = M^e mod n
@@ -84,24 +63,20 @@ def encrypt(m, e, n): #C = M^e mod n
 
 def decrypt(c, d, n): #M = C^d mod n
       return pow(c,d,n)
-    
 
-p,q = pqGen(64)
-n = p*q
-phi = phiCalc(p,q)
-e,d = edGen(phi)
-print("p :",p)
-print("q :",q)
-print("n :",n)
-print("phi :",phi)
-print("e :",e)
-print("d :",d)
+def keygen(lenght):
+      p,q = pqGen(lenght)
+      n = p*q
+      phi = phiCalc(p,q)
+      e,d = edGen(phi)
 
-colorPrint(CYAN,"Test de chiffrement et dechiffrement ...")
-m = random.randint(2,n-1)
-print(f"Message : {m}")
-c = encrypt(m,e,n)
-print(f"Message chiffré : {c}")
-m = decrypt(c,d,n)
-print(f"Message déchiffré : {m}")
+      print("p :",p)
+      print("q :",q)
+      print("n :",n)
+      print("phi :",phi)
+      print("e :",e)
+      print("d :",d)
 
+      return e,d,n
+
+keygen(32)
