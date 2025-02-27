@@ -38,7 +38,7 @@ def pqGen(lenght):
         while not isPrime(p):
               p = random.randint(2,limit)
         while not isPrime(q) or p == q:
-              q = random.choice(list(range(2, int(p-0.1*limit))) + list(range(int(p+0.1*limit), limit)))
+              q = random.randint(2,limit)
         return p,q 
 
 def phiCalc(p,q): 
@@ -77,6 +77,15 @@ def keygen(lenght):
       print("e :",e)
       print("d :",d)
 
-      return e,d,n
+      return e,d,n,phi
 
-keygen(32)
+def encrypt(m,e,n): return pow(m,e,n)
+def decrypt(c,d,n): return pow(c,d,n)
+
+e,d,n,phi = keygen(110)
+m = random.randint(2,phi-1)
+c = encrypt(m,e,n)
+m1 = decrypt(c,d,n)
+colorPrint(GREEN,f"Message : {m}")
+colorPrint(YELLOW,f"Message chiffré : {c}")
+colorPrint(GREEN, f"Message déchiffré : {m1}")
