@@ -21,7 +21,6 @@ def colorPrint(color,text):
 
 def isPrime(n):
         if n <= 1: 
-              print(f"{n} n'est pas premier.")
               return False
 
         if n == 2 : 
@@ -29,12 +28,10 @@ def isPrime(n):
               return True
 
         if n%2 == 0: 
-              print(f"{n} n'est pas premier.")
               return False #On élimine les nombres pairs sauf 2 avant d'itérer
 
         for x in tqdm(range(3,int(sqrt(n))+1,2),f"Verification de {n}",unit="test"):
                if n%x == 0: 
-                     print(f" {n} n'est pas premier.")
                      return False
 
         colorPrint(GREEN,f"{n} est premier.\n")
@@ -82,12 +79,29 @@ def edGen(phi):
     colorPrint(GREEN, f"d = {d} est l'inverse modulaire de {e}.\n")
     return e, d
 
+def encrypt(m, e, n): #C = M^e mod n
+      return pow(m,e,n)
+
+def decrypt(c, d, n): #M = C^d mod n
+      return pow(c,d,n)
+    
+
 p,q = pqGen(64)
+n = p*q
 phi = phiCalc(p,q)
 e,d = edGen(phi)
 print("p :",p)
 print("q :",q)
+print("n :",n)
 print("phi :",phi)
 print("e :",e)
 print("d :",d)
+
+colorPrint(CYAN,"Test de chiffrement et dechiffrement ...")
+m = random.randint(2,n-1)
+print(f"Message : {m}")
+c = encrypt(m,e,n)
+print(f"Message chiffré : {c}")
+m = decrypt(c,d,n)
+print(f"Message déchiffré : {m}")
 
