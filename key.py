@@ -2,8 +2,9 @@
 # n = pq ; phi(n) = (p-1) * (q-1)
 # generation de e premier avec phi(n) e < phi(n)
 # trouve d avec euclide étendu
-from math import sqrt,log
+from math import sqrt
 import random
+from hashlib import sha256
 
 # Définition des couleurs ANSI
 RED = "\033[31m"
@@ -146,6 +147,11 @@ for message in m:
 
 def replaceAlphabet(alphabet,letter): return alphabet[letter]
 
+def replaceNumber(alphabet, number): 
+      for letter in alphabet:
+            if alphabet[letter] == number:
+                  return letter
+
 def blockSizeCalc(n,alphabet):
       i = 1
       while len(alphabet)**i < n:
@@ -171,13 +177,19 @@ def messageToBlocks(message,alphabet,block_size):
       if i > 0:
             for j in range(i):
                   i -= 1
-                  somme+= 26*(block_size**i)
+                  somme+= letterToNumber(alphabet, i, ' ')
             blocks.append(somme)
       return blocks
 
 def blocksToMessage(blocks, alphabet, block_size):
-    return "A implémenter"
-
+      message = ""
+      for block in blocks:
+            block_sum = block
+            for i in range(block_size,0,-1):
+                  calc = block_sum // (len(alphabet)**(i-1))
+                  block_sum = block_sum % (len(alphabet)**(i-1))
+                  message += replaceNumber(alphabet,calc)
+      return message
 
 def encryptBlocks(blocks,e,n):
       blocksBis = []
@@ -191,11 +203,69 @@ def decryptBlocks(blocks,d,n):
             blocksBis.append(decrypt(c,d,n))
       return blocksBis
 
+"""
+RSA ET CODAGE
 alphabet = {
-    'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 
-    'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 
-    'U': 20, 'V': 21, 'W': 22, 'X': 23, 'Y': 24, 'Z': 25, '_': 26, '.': 27, '?': 28, '€': 29, 
-    '0': 30, '1': 31, '2': 32, '3': 33, '4': 34, '5': 35, '6': 36, '7': 37, '8': 38, '9': 39
+      "a": 0,
+      "b": 1,
+      "c": 2,
+      "d": 3,
+      "e": 4,
+      "f": 5,
+      "g": 6,
+      "h": 7,
+      "i": 8,
+      "j": 9,
+      "k": 10,
+      "l": 11,
+      "m": 12,
+      "n": 13,
+      "o": 14,
+      "p": 15,
+      "q": 16,
+      "r": 17,
+      "s": 18,
+      "t": 19,
+      "u": 20,
+      "v": 21,
+      "w": 22,
+      "x": 23,
+      "y": 24,
+      "z": 25,
+      "A": 26,
+      "B": 27,
+      "C": 28,
+      "D": 29,
+      "E": 30,
+      "F": 31,
+      "G": 32,
+      "H": 33,
+      "I": 34,
+      "J": 35,
+      "K": 36,
+      "L": 37,
+      "M": 38,
+      "N": 39,
+      "O": 40,
+      "P": 41,
+      "Q": 42,
+      "R": 43,
+      "S": 44,
+      "T": 45,
+      "U": 46,
+      "V": 47,
+      "W": 48,
+      "X": 49,
+      "Y": 50,
+      "Z": 51,
+      " ": 52,
+      ".": 53,
+      ",": 54,
+      ";": 55,
+      ":": 56,
+      "!": 57,
+      "?": 58,
+      "'": 59
 }
 
 print(YELLOW,end="")
@@ -204,18 +274,94 @@ e,d,n,phi = keygen(int(input("Taille de la clé : ")))
 print(RESET,end="")
 colorPrint(CYAN,f"Clé publique : {e,n}")
 colorPrint(CYAN,f"Clé privée : {d,n}")
-colorPrint(CYAN,f"Phi : {phi}")
+colorPrint(CYAN,f"Phi : {phi}\n")
 print(YELLOW,end="")
 
 message = input("Message a chiffrer: ")
 print(RESET,end="")
 
 blockSize = blockSizeCalc(n,alphabet)
+colorPrint(CYAN,f"Taille des blocs : {blockSize}\n")
+
 blocks = messageToBlocks(message,alphabet,blockSize)
 colorPrint(GREEN,f"Message : {message}")
-colorPrint(YELLOW,f"Message en blocs : {blocks}")
+colorPrint(GREEN,f"Message en blocs : {blocks}\n")
+
 blocks = encryptBlocks(blocks,e,n)
-colorPrint(GREEN,f"Message chiffré : {blocks}")
+blocks_bis = blocksToMessage(blocks,alphabet,blockSize+1)
+colorPrint(RED,f"Message chiffré : {blocks_bis}")
+colorPrint(RED,f"Message chiffré en blocks : {blocks}\n")
+
 blocks = decryptBlocks(blocks,d,n)
-colorPrint(YELLOW,f"Message déchiffré en blocs: {blocks}")
-colorPrint(GREEN,f"Message déchiffré : {blocksToMessage(blocks,alphabet,blockSize)}")
+colorPrint(GREEN,f"Message déchiffré en blocs: {blocks}")
+colorPrint(GREEN,f"Message déchiffré : {blocksToMessage(blocks,alphabet,blockSize)}")"
+"""
+
+def hashFile(file):
+      with open(file,"rb") as f:
+            return sha256(f.read()).hexdigest()
+
+def signHash(hash,d,n):
+      alphabet_hex = {
+            "0": 0,
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9,
+            "a": 10,
+            "b": 11,
+            "c": 12,
+            "d": 13,
+            "e": 14,
+            "f": 15,
+            " ": 16
+      }
+
+      block_size = blockSizeCalc(n,alphabet_hex)
+      blocks = messageToBlocks(hash,alphabet_hex,block_size)
+      encrypt_blocks = encryptBlocks(blocks,d,n)
+      return encrypt_blocks
+
+def verifyHash(hash,signature,e,n):
+      alphabet_hex = {
+            "0": 0,
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9,
+            "a": 10,
+            "b": 11,
+            "c": 12,
+            "d": 13,
+            "e": 14,
+            "f": 15,
+            " ": 16
+      }
+
+      block_size = blockSizeCalc(n,alphabet_hex)
+      blocks = decryptBlocks(signature,e,n)
+      message = blocksToMessage(blocks,alphabet_hex,block_size).replace(" ","")
+      return message == hash
+
+e,d,n,phi = keygen(32)
+hash = hashFile("input.txt")
+signature = signHash(hash,d,n)
+verifyHash(hash,signature,e,n)
+
+colorPrint(CYAN,f"Hash : {hash}")
+colorPrint(CYAN,f"Signature : {signature}")
+
+if verifyHash(hash,signature,e,n):
+      colorPrint(GREEN,"Signature valide")
+else:
+      colorPrint(RED,"Signature invalide")
