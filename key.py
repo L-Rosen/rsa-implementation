@@ -5,19 +5,7 @@
 from math import sqrt
 import random
 from hashlib import sha256
-
-# Définition des couleurs ANSI
-RED = "\033[31m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-BLUE = "\033[34m"
-MAGENTA = "\033[35m"
-CYAN = "\033[36m"
-WHITE = "\033[37m"
-RESET = "\033[0m"
-
-def colorPrint(color,text):
-      print(color+text+RESET)
+import argparse
 
 def isPrime(n):
         if n <= 1:return False
@@ -74,7 +62,6 @@ def keygen(lenght):
 
 def encrypt(m,e,n): return pow(m,e,n)
 def decrypt(c,d,n): return pow(c,d,n)
-
 
 def factorize(n):
       for p in range(1,n):
@@ -353,6 +340,7 @@ def verifyHash(hash,signature,e,n):
       message = blocksToMessage(blocks,alphabet_hex,block_size).replace(" ","")
       return message == hash
 
+"""
 e,d,n,phi = keygen(32)
 hash = hashFile("input.txt")
 signature = signHash(hash,d,n)
@@ -365,3 +353,152 @@ if verifyHash(hash,signature,e,n):
       colorPrint(GREEN,"Signature valide")
 else:
       colorPrint(RED,"Signature invalide")
+"""
+
+if __name__ == "__main__":
+      parser = argparse.ArgumentParser(description="Outil RSA en ligne de commande")
+      parser.add_argument("mode", choices=["keygen", "encrypt", "decrypt","encryption-test","factorize"], help="Action à effectuer")
+      parser.add_argument("--keysize", type=int, help="Taille de la clé en bits", default=32)
+      parser.add_argument("--key", type=int, help="Exposant pour chiffrer/déchiffrer")
+      parser.add_argument("--n", type=int, help="Module n")
+      parser.add_argument("--messageint", type=int, help="Message (nombre) à chiffrer/déchiffrer")
+      parser.add_argument("--messagetxt", type=str, help="Message (texte) à chiffrer/déchiffrer")
+
+      args = parser.parse_args()
+
+      if args.mode == "keygen":
+            e,d,n,phi = keygen(args.keysize)
+            print(f"Taille de la clé : {args.keysize}")
+            print(f"Exposant publique : {e}")
+            print(f"Exposant privé : {d}")
+            print(f"Module n : {n}")
+      
+      elif args.mode == "encrypt":
+
+            alphabet = {
+                        "a": 0,
+                        "b": 1,
+                        "c": 2,
+                        "d": 3,
+                        "e": 4,
+                        "f": 5,
+                        "g": 6,
+                        "h": 7,
+                        "i": 8,
+                        "j": 9,
+                        "k": 10,
+                        "l": 11,
+                        "m": 12,
+                        "n": 13,
+                        "o": 14,
+                        "p": 15,
+                        "q": 16,
+                        "r": 17,
+                        "s": 18,
+                        "t": 19,
+                        "u": 20,
+                        "v": 21,
+                        "w": 22,
+                        "x": 23,
+                        "y": 24,
+                        "z": 25,
+                        "A": 26,
+                        "B": 27,
+                        "C": 28,
+                        "D": 29,
+                        "E": 30,
+                        "F": 31,
+                        "G": 32,
+                        "H": 33,
+                        "I": 34,
+                        "J": 35,
+                        "K": 36,
+                        "L": 37,
+                        "M": 38,
+                        "N": 39,
+                        "O": 40,
+                        "P": 41,
+                        "Q": 42,
+                        "R": 43,
+                        "S": 44,
+                        "T": 45,
+                        "U": 46,
+                        "V": 47,
+                        "W": 48,
+                        "X": 49,
+                        "Y": 50,
+                        "Z": 51,
+                        " ": 52,
+                        ".": 53,
+                        ",": 54,
+                        ";": 55,
+                        ":": 56,
+                        "!": 57,
+                        "?": 58,
+                        "'": 59
+                  }
+            
+            if not (args.key or not args.n) and (args.messageint or args.messagetxt):
+                  e,d,n,phi = keygen(args.keysize)
+                  print(f"Aucune clé fournie , génération de clé aléatoire")
+                  print(f"Clé publique : ({args.key},{args.n})")
+                  print(f"Clé privée : ({d},{args.n})")
+            else:
+                  e,n = args.key,args.n
+
+            if not args.messageint and not args.messagetxt:
+                  print("Vous devez spécifier un message à chiffrer")
+            
+            elif args.messageint and args.messagetxt:
+                  print("Vous devez spécifier un seul type de message")
+
+            elif args.messageint and not args.messagetxt:
+                  encrypted = encrypt(args.message,e,n)
+                  print(f"Message chiffré: {args.message}")
+
+            elif args.messagetxt and not args.messageint:
+                  print(e,n)
+                  blockSize = blockSizeCalc(n,alphabet)
+                  blocks = messageToBlocks(args.message,alphabet,blockSize)
+                  encrypted = encryptBlocks(blocks,e,n)
+                  print(f"Message chiffré : {blocksToMessage(encrypted,alphabet,blockSize)}")
+                  
+            
+      elif args.mode == "decrypt":
+            if not args.key or not args.n or not args.message:
+                  print("Vous devez spécifier l'exposant de déchiffrement, le module et le message à déchiffrer")
+            else:
+                  print(decrypt(args.message,args.key,args.n))
+
+      elif args.mode == "encryption-test":
+            if not args.message:
+                  print("Vous devez spécifier un message")
+            else:
+                  e,d,n,phi = keygen(32)
+                  print(f"Taille de la clé : {args.keysize}")
+                  print(f"Exposant publique : {e}")
+                  print(f"Exposant privé : {d}")
+                  print(f"Module n : {n}")
+                  print(f"Message : {args.message}")
+                  print(f"Message chiffré : {encrypt(args.message,e,n)}")
+                  print(f"Message déchiffré : {decrypt(encrypt(args.message,e,n),d,n)}")
+      
+      elif args.mode == "factorize":
+           if not args.n or not args.key or not args:
+                    print("Vous devez spécifier le module et l'exposant pour l'attaque par factorisation")
+           else:
+                  p,q = factorize(args.n)
+                  phi = phiCalc(p,q)
+                  r, d = extendedEuclid(args.key, phi)
+                  if args.message:
+                        decrypt = decrypt(args.message,d,args.n)
+                        reencrypt = encrypt(decrypt,args.key,args.n)
+
+                  print(f"Clé fournie :({args.key},{args.n})")
+                  print(f"Clé calculée : ({d},{args.n})")
+
+                  if args.message:
+                        if reencrypt != args.message :
+                              print("Erreur lors de l'attaque par factorisation")
+                        else:
+                              print(f"Message déchiffré : {decrypt}")
